@@ -1,0 +1,47 @@
+format = """
+$directory\
+[](fg:#4B567A bg:#2E3440)\
+$git_branch$git_status\
+[](fg:#2E3440 bg:transparent) ${custom}\
+$fill $python
+$character"""
+
+
+[fill]
+symbol = " "
+
+[directory]
+style = "bg:#4B567A fg:#ECEFF4"
+format = "[ $path ]($style)"
+
+[git_branch]
+symbol = " "
+style = "bg:#2E3440 fg:#81A1C1"
+format = "[[ $symbol$branch ]($style)]($style)"
+
+[git_status]
+style = "bg:#2E3440 fg:#BF616A"
+format = "[[($all_status$ahead_behind )]($style)]($style)"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+
+[custom.git_user]
+command = "git config user.name"
+when = 'git rev-parse --is-inside-work-tree'
+format = "[ $output]($style)"
+style = "fg:#61afef"
+shell = ["bash", "--norc", "--noprofile"]
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+
+[python]
+# Show python version and virtual environment name
+python_binary = ["python3", "python"]
+format = "via [(${virtualenv})]($style) "
+
+[golang]
+symbol = " "
+# Only show the Go version if there is a go.mod file
+format = "[$symbol($version )]($style)"
