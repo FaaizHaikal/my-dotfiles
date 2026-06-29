@@ -13,6 +13,8 @@ return {
 			python = { "ruff_format" },
 
 			java = { "google-java-format" },
+
+tex = { "latexindent" },
 		},
 
 		format_on_save = {

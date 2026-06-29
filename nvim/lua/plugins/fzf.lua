@@ -1,7 +1,6 @@
 return {
   "ibhagwan/fzf-lua",
   dependencies = { "nvim-tree/nvim-web-devicons" },
-  -- Using cmd ensures the plugin lazy-loads cleanly when you call it
   cmd = "FzfLua",
   opts = {
     winopts = {
@@ -11,25 +10,44 @@ return {
         layout = "vertical",
       },
     },
-    -- FIX: We define the keymaps safely as strings rather than executing the require directly
     keymap = {
       fzf = {
-        ["tab"] = "down",     -- Tab moves down to next match
-        ["shift-tab"] = "up", -- Shift+Tab moves up to prev match
+        ["tab"] = "down",
+        ["shift-tab"] = "up",
       },
     },
   },
-  -- Use the config function to safely bind actions after loading
   config = function(_, opts)
     local fzf_lua = require("fzf-lua")
-    
-    -- Inject the file action handlers smoothly now that the module is safe
+
+    local winbuf_custom_action = function(selected, fzf_opts)
+      local file_entry = fzf_lua.path.entry_to_file(selected[1], fzf_opts)
+      if file_entry and file_entry.path then
+        vim.cmd("edit " .. vim.fn.fnameescape(file_entry.path))
+        if file_entry.line and file_entry.line > 0 then
+          pcall(vim.api.nvim_win_set_cursor, 0, { file_entry.line, (file_entry.col or 1) - 1 })
+        end
+        pcall(function()
+          require("winbuf").cycle(0)
+        end)
+      end
+    end
+
     opts.actions = {
       files = {
+        ["default"] = winbuf_custom_action,
+      },
+      grep = {
+        ["default"] = winbuf_custom_action,
+      },
+    }
+
+    opts.blines = {
+      actions = {
         ["default"] = fzf_lua.actions.file_edit,
       },
     }
-    
+
     fzf_lua.setup(opts)
   end,
 }

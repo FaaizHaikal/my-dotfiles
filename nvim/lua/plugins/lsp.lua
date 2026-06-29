@@ -1,77 +1,77 @@
 return {
-	{
-		"mason-org/mason.nvim",
-		opts = {},
-	},
-
-	{
-		"mason-org/mason-lspconfig.nvim",
-
-		dependencies = {
-			"mason-org/mason.nvim",
-			"neovim/nvim-lspconfig",
-		},
-
-		opts = {
-			ensure_installed = {
-				"lua_ls",
-				"clangd",
-				"gopls",
-				"jdtls",
-				"pyright",
-				--"dockerls",
-				"texlab",
-			},
-
-			automatic_enable = true,
-		},
-
-		config = function(_, opts)
-			require("mason-lspconfig").setup(opts)
-
-			vim.lsp.config("lua_ls", {
-				settings = {
-					Lua = {
-						diagnostics = {
-							globals = { "vim" },
-						},
-					},
+	"mfussenegger/nvim-dap",
+	dependencies = {
+		"rcarriga/nvim-dap-ui",
+		"nvim-neotest/nvim-nio",
+		"theHamsta/nvim-dap-virtual-text",
+		"mason-org/mason.nvim", -- Kept as mason-org to match your LSP
+		"stevearc/overseer.nvim",
+		{
+			"jay-babu/mason-nvim-dap.nvim",
+			dependencies = "mason-org/mason.nvim", -- Kept as mason-org
+			opts = {
+				ensure_installed = {
+					"delve",
+					"python",
+					"codelldb",
 				},
-			})
-
-			vim.diagnostic.config({
-				virtual_text = true,
-				signs = true,
-				underline = true,
-				severity_sort = true,
-			})
-
-			local group = vim.api.nvim_create_augroup("LspKeymaps", { clear = true })
-
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = group,
-
-				callback = function(event)
-					local opts = {
-						buffer = event.buf,
-						silent = true,
-					}
-
-					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-
-					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-					vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-
-					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-
-					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-
-					vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
-					vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-				end,
-			})
-		end,
+				automatic_installation = true,
+			},
+		},
 	},
+	config = function()
+		local dap = require("dap")
+		local dapui = require("dapui")
+
+		require("nvim-dap-virtual-text").setup()
+		dapui.setup()
+		require("overseer").setup({
+			templates = { "builtin" },
+		})
+
+		-- Updated ext.vscode syntax
+		local vscode = require("dap.ext.vscode")
+		vscode.json_decode = function(str)
+			return vim.json.decode(str, { lstrip_comments = true })
+		end
+
+		vscode.type_to_filetypes = {
+			codelldb = { "c", "cpp" },
+			delve = { "go" },
+			python = { "python" },
+		}
+
+		-- Auto UI toggles
+		dap.listeners.before.attach.dapui_config = function()
+			dapui.open()
+		end
+		dap.listeners.before.event_initialized.dapui_config = function()
+			dapui.open()
+		end
+		dap.listeners.before.event_terminated.dapui_config = function()
+			dapui.close()
+		end
+		dap.listeners.after.event_exited.dapui_config = function()
+			dapui.close()
+		end
+
+		-- Adapters
+		dap.adapters.codelldb = {
+			type = "server",
+			port = "${port}",
+			executable = {
+				command = vim.fn.stdpath("data") .. "/mason/bin/codelldb",
+				args = { "--port", "${port}" },
+			},
+		}
+
+		dap.adapters.delve = {
+			type = "server",
+			port = "${port}",
+			executable = {
+				command = "dlv",
+				args = { "adapter" },
+			},
+		}
+	end,
 }

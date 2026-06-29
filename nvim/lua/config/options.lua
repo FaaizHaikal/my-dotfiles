@@ -22,7 +22,7 @@ vim.opt.splitbelow = true
 
 vim.opt.signcolumn = "yes"
 
-vim.opt.cursorline = true
+vim.opt.cursorline = false
 
 vim.opt.undofile = true
 
@@ -33,23 +33,25 @@ vim.opt.completeopt = { "menu", "menuone", "noselect" }
 local latex_group = vim.api.nvim_create_augroup("LatexAutoCompile", { clear = true })
 
 vim.api.nvim_create_autocmd("BufWritePost", {
-  group = latex_group,
-  pattern = "*.tex", -- Fires strictly when saving a LaTeX file
-  callback = function()
-    -- Get the absolute path of the current file being saved
-    local current_file = vim.fn.expand("%:p")
-    
-    -- Runs pdflatex non-interactively 
-    vim.fn.jobstart({ "pdflatex", "-interaction=nonstopmode", current_file }, {
-      stdout_buffered = true,
-      stderr_buffered = true,
-      on_exit = function(_, exit_code)
-        if exit_code == 0 then
-          vim.notify("LaTeX Build Successful!", vim.log.levels.INFO, { title = "Compiler" })
-        else
-          vim.notify("LaTeX Build Failed!", vim.log.levels.ERROR, { title = "Compiler" })
-        end
-      end,
-    })
-  end,
+	group = latex_group,
+	pattern = "*.tex",
+	callback = function()
+		local current_file = vim.fn.expand("%:p")
+		local current_dir = vim.fn.expand("%:p:h")
+
+		-- Added -silent and -f flags to prevent minor non-breaking warnings 
+		-- from triggering a non-zero exit code from latexmk
+		vim.fn.jobstart({ "latexmk", "-pdf", "-silent", "-f", "-interaction=nonstopmode", current_file }, {
+			cwd = current_dir,
+			stdout_buffered = true,
+			stderr_buffered = true,
+			on_exit = function(_, exit_code)
+				if exit_code == 0 then
+					vim.notify("LaTeX & BibTeX Build Successful!", vim.log.levels.INFO, { title = "Compiler" })
+				else
+					vim.notify("LaTeX Build Failed!", vim.log.levels.ERROR, { title = "Compiler" })
+				end
+			end,
+		})
+	end,
 })

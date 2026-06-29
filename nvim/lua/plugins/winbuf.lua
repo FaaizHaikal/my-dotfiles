@@ -4,7 +4,7 @@ return {
   dependencies = { "nvim-tree/nvim-web-devicons", "echasnovski/mini.bufremove" },
   config = function()
     require("winbuf").setup({
-      style = "thin",       -- "thin", "thick", "slant", "slope", "round"
+      style = "thick",       -- "thin", "thick", "slant", "slope", "round"
       diagnostics = "nvim_lsp",
       -- no_buffer_text = "",
       buf_delete = function(buf)
