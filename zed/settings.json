@@ -1,0 +1,26 @@
+{
+  "session": {
+    "trust_all_worktrees": true,
+  },
+  "cli_default_open_behavior": "new_window",
+  "buffer_font_features": {
+    "calt": false,
+  },
+  "disable_ai": false,
+  "theme": "Caelestia",
+  // "vim_mode": true,
+  "ui_font_size": 16,
+  "buffer_font_size": 16,
+  // "ui_font_family": "JetBrainsMonoNL Nerd Font Mono",
+  "buffer_font_family": "CaskaydiaCove Nerd Font Mono",
+  "ui_font_family": "CaskaydiaCove Nerd Font Mono",
+  "icon_theme": "Catppuccin Mocha",
+  "tabs": {
+    "file_icons": true,
+  },
+  "tab_size": 2,
+  "format_on_save": "on",
+  // "format_on_save": "off",
+  "current_line_highlight": "none",
+  // "relative_line_numbers": "enabled",
+}
